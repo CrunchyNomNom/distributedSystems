@@ -29,12 +29,13 @@ def currency_service():
         stub = currency_pb2_grpc.CurrenciesStub(channel)
         try:
             for res in stub.register(make_bank_info()):
+                print(res)
                 used_currencies[res.currency] = res.value
         except grpc._channel._Rendezvous as e:
             print(e)
 
 
-class StandardAccountI(Account.StandardAccountI):
+class StandardAccountI(Account.StandardAccount):
 
     def __init__(self, name, pesel, income, pwd, acc_type):
         self.name = name
@@ -48,24 +49,24 @@ class StandardAccountI(Account.StandardAccountI):
         return self.balance
 
 
-class PremiumAccountI(Account.PremiumAccountI, StandardAccountI):
-
-    # TODO
-    def is_currency_supported(currency):
-        return True
+class PremiumAccountI(Account.PremiumAccount, StandardAccountI):
 
     def getLoan(self, amount, currency, current):
-        if amount <= 0:
-            raise LoanRejected(
-                'Loan rejected: Negative amount.'
-            )
-        if not is_currency_supported:
-            raise LoanRejected(
-                'Loan rejected: The bank does not support this currency.'
-            )
-        print(str(c))
-        curr = CURRENCIES[str(c)]
-        return amount * used_currencies[curr]
+        try:
+            if amount <= 0:
+                raise Account.LoanRejected(
+                    'Loan rejected: Negative amount.'
+                )
+            curr = CURRENCIES[str(currency)]
+            print(str(currency) + str(curr))
+            return amount * used_currencies[curr]
+
+        except Account.LoanRejected() as e:
+            raise e
+        except Exception:
+            raise Account.LoanRejected(
+                    'Loan rejected: The bank does not support this currency.'
+                ) 
         
 
 class BankServiceI(Account.BankService):
@@ -75,8 +76,8 @@ class BankServiceI(Account.BankService):
         self.adapter = adapter
         self.accounts = {}
 
-    def generate_password():
-        return 'admin1'
+    def generate_password(self):
+        return '123'
 
     def registerAccount(self, name, pesel, income, current=None):
         if pesel in self.accounts.keys():
@@ -105,16 +106,16 @@ class BankServiceI(Account.BankService):
         return False
 
     def login(self, pesel, pwd, current=None):
-        if not are_credentials_correct(pesel, pwd):
+        if not self.are_credentials_correct(pesel, pwd):
             raise Account.AuthenticationFailed(
                 'Authentication Failed: Wrong PESEL or password')
         acc_type = self.accounts[pesel].acc_type
         setup = current.adapter.createProxy(Ice.stringToIdentity(
             pesel + str(acc_type)))
         if(acc_type == Account.Type.PREMIUM):
-            new =  Account.PremiumAccountPrx.uncheckedCast(base)
+            new =  Account.PremiumAccountPrx.uncheckedCast(setup)
         else:
-            new = Account.StandardAccountPrx.uncheckedCast(base)
+            new = Account.StandardAccountPrx.uncheckedCast(setup)
         return Account.LoginResponse(acc_type, new)
 
 

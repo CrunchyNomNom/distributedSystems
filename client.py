@@ -1,17 +1,24 @@
 import Ice
+import Account
 
+CURRENCIES = {
+    'USD': Account.Currency.USD,
+    'EUR': Account.Currency.EUR,
+    'GBP': Account.Currency.GBP,
+    'CHF': Account.Currency.CHF
+}
 
 class LoggedUser():
 
     def __init__(self, acc_type, setup):
-        if acc_type == Account.Type.PREMIUM
+        if acc_type == Account.Type.PREMIUM:
             self.account = Account.PremiumAccountPrx.checkedCast(setup)
         else:
             self.account = Account.StandardAccountPrx.checkedCast(setup)
 
     def balance(self):
         balance = self.account.getBalance()
-        print('Your balance is %f' % (balance))
+        print('Your balance is %.2f' % (balance))
 
     def loan(self):
         try:
@@ -38,7 +45,7 @@ class LoggedUser():
 
 def login(proxy):
     try:
-        pesel = int(input('PESEL: '))
+        pesel = input('PESEL: ')
         pwd = input('Password: ')
 
         res = proxy.login(pesel, pwd)
@@ -52,11 +59,11 @@ def login(proxy):
 def register(proxy):
     try:
         name = input('Name: ')
-        pesel = int(input('PESEL: '))
+        pesel = input('PESEL: ')
         income = float(input('Income (per month): '))
 
         res = proxy.registerAccount(name, pesel, income)
-        print('{} account registered! Your password: {}' % (res.type, res.pwd))
+        print('{} account registered! Your password: {}'.format(str(res.type), res.pwd))
 
     except Exception as e:
         print(e)
