@@ -1,0 +1,23 @@
+syntax = "proto3";
+package currencies;
+
+service Currencies {
+    rpc register(BankInfo) returns (stream CurrencyInfo) {}
+}
+
+enum Currency{
+    USD = 0;
+    EUR = 1;
+    GBP = 2;
+    CHF = 3;
+}
+
+message BankInfo{
+    repeated Currency otherCurrency = 2;
+}
+
+message CurrencyInfo{
+    Currency currency = 1;
+    float value = 2;
+}
+
