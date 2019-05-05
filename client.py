@@ -39,7 +39,7 @@ class LoggedUser():
                 self.balance()
             if a == 'loan':
                 self.loan()
-            if a == 'quit':
+            if a == 'logout':
                 return
 
 
