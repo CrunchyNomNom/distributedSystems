@@ -77,7 +77,7 @@ class BankServiceI(Account.BankService):
         self.accounts = {}
 
     def generate_password(self):
-        return '123'
+        return 'admin1'
 
     def registerAccount(self, name, pesel, income, current=None):
         if pesel in self.accounts.keys():
